@@ -1,5 +1,5 @@
 ---
-title: "analysis"
+title: "PA1_template"
 author: "Maryam Sadeghi"
 date: "30/07/2019"
 output: html_document
