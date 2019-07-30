@@ -1,0 +1,60 @@
+---
+title: "analysis"
+author: "Maryam Sadeghi"
+date: "30/07/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Analysis of Data
+The first step is to read the data 
+
+```{r}
+activity<-read.csv("activity.csv")
+```
+In the next step, we want to find the total number of steps taken per day by taking a histogram of the values.
+```{r}
+activity$day <-weekdays(as.Date(activity$date))
+activity$DateTime<- as.POSIXct(activity$date, format="%Y-%m-%d")
+clean <- activity[!is.na(activity$steps),]
+sumTable <- aggregate(activity$steps ~ activity$date, FUN=sum, )
+colnames(sumTable)<- c("Date", "Steps")
+hist(sumTable$Steps, breaks=5, xlab="Steps", main = "Total Steps per Day")
+```
+New, let us find the mean and median of the total number of steps taken per day.
+```{r}
+mean(sumTable$Steps)
+median(sumTable$Steps)
+```
+According to the above code, the mean and median are 10766.19 and 10765, respectively. The following plot indicates the average number of steps per day.
+```{r}
+intervalTable <- ddply(clean, .(interval), summarize, Avg = mean(steps))
+p <- ggplot(intervalTable, aes(x=interval, y=Avg), xlab = "Interval", ylab="Average Number of Steps")
+p + geom_line()+xlab("Interval")+ylab("Average Number of Steps")+ggtitle("Average Number of Steps per Interval")
+```
+Based on this plot, the highst point is approximately 220 and the lowest point is 0.
+```{r}
+maxSteps <- max(intervalTable$Avg)
+intervalTable[intervalTable$Avg==maxSteps,1]
+nrow(activity[is.na(activity$steps),])
+```
+Hence, the total number of missing values in the dataset is 2304.
+Differences in activity patterns: Weekdays vs Weekends.
+```{r}
+avgTable <- ddply(clean, .(interval, day), summarize, Avg = mean(steps))
+nadata<- activity[is.na(activity$steps),]
+newdata<-merge(nadata, avgTable, by=c("interval", "day"))
+newdata2<- newdata[,c(6,4,1,2,5)]
+colnames(newdata2)<- c("steps", "date", "interval", "day", "DateTime")
+mergeData <- rbind(clean, newdata2)
+sumTable2 <- aggregate(mergeData$steps ~ mergeData$date, FUN=sum, )
+colnames(sumTable2)<- c("Date", "Steps")
+mean(sumTable2$Steps)
+median(sumTable2$Steps)
+```
+
+
+
